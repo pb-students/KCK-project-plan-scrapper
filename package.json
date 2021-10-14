@@ -1,0 +1,10 @@
+{
+  "name": "KCK-project-plan-scrapper",
+  "packageManager": "yarn@3.0.2",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "vue",
+    "cli"
+  ]
+}
