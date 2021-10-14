@@ -1,5 +1,5 @@
 {
-  "name": "KCK-project-plan-scrapper",
+  "name": "KCK-project-schedule-scrapper",
   "private": true,
   "workspaces": [
     "backend",
