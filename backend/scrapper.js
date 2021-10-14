@@ -78,7 +78,3 @@ export const fetchTeacherSchedule = async id => {
   cache.set(KEY_TEACHER + id, res, TTL_TEACHER)
   return res
 }
-
-fetchTeacherSchedule(75)
-  .then(console.log)
-  .catch(console.error)
