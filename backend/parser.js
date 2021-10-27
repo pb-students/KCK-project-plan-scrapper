@@ -81,6 +81,7 @@ export const parseClass = str => {
     const name = nameParts.reverse().join(', ')
 
     return {
+        type: 'class',
         name,
         place,
         semester,
