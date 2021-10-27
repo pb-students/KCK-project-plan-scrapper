@@ -64,7 +64,10 @@ export const fetchTeacherSchedule = async id => {
         break;
 
       case 'P':
-        curr.text().replace(/^(.+?): (.+)/gm, (_, $1, $2) => (row.data[$1] = $2))
+        curr.text().replace(/^(.+?): (.+)/gm, (_, $1, $2) => {
+            row.data[$1] ??= []
+            row.data[$1].push($2)
+        })
         break;
     }
 
