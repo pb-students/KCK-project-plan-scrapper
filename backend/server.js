@@ -51,26 +51,29 @@ app.get('/degrees', async (request, reply) => {
         }
 
         const name = clazz.degree in degreeMap ? degreeMap[clazz.degree] : clazz.degree
-        degrees[name] ??= {
+        degrees[clazz.isStationary] ??= {}
+        degrees[clazz.isStationary][name] ??= {
           name,
           stages: {}
         }
 
-        degrees[name].stages[clazz.stage] ??= {
+        degrees[clazz.isStationary][name].stages[clazz.stage] ??= {
           semesters: new Set(),
           specs: new Set()
         }
 
-        degrees[name].stages[clazz.stage].semesters.add(clazz.semester)
-        degrees[name].stages[clazz.stage].specs.add(clazz.spec)
+        degrees[clazz.isStationary][name].stages[clazz.stage].semesters.add(clazz.semester)
+        degrees[clazz.isStationary][name].stages[clazz.stage].specs.add(clazz.spec)
       }
     }
   }
 
-  for (const degree of Object.values(degrees)) {
-    for (const stage of Object.values(degree.stages)) {
-      stage.semesters = [...stage.semesters].filter(i => i).sort()
-      stage.specs = [...stage.specs].filter(i => i).sort()
+  for (const stationary of Object.values(degrees)) {
+    for (const degree of Object.values(stationary)) {
+      for (const stage of Object.values(degree.stages)) {
+        stage.semesters = [...stage.semesters].filter(i => i).sort()
+        stage.specs = [...stage.specs].filter(i => i).sort()
+      }
     }
   }
 
