@@ -4,6 +4,7 @@ import { table } from 'table'
 import { writeFile, readFile, mkdir, rm } from 'fs/promises'
 import { join } from 'path'
 import { xdgConfig } from 'xdg-basedir'
+import chalk from 'chalk'
 
 const API_URL = 'http://localhost:2137'
 
@@ -11,6 +12,9 @@ const { data: degrees } = await axios.get(`${API_URL}/degrees`)
 
 const configDir = join(xdgConfig, 'kck-scrapper')
 const configFile = join(configDir, 'config.json')
+
+const orange = chalk.hex('#ffaa00')
+const today = new Date().getDay() - 1
 
 try {
   await mkdir(configDir)
@@ -63,7 +67,7 @@ loop: while (true) {
   const { data: schedule } = await axios.get(`${API_URL}/schedule`)
 
   const durations = {}
-  for (const day of Object.keys(schedule)) {
+  for (const [i, day] of Object.entries(Object.keys(schedule))) {
     tableData[0].push(day)
     durations[day] ??= []
   }
@@ -107,13 +111,15 @@ loop: while (true) {
         .sort()
         .join('\n')
 
-      row.push(cell)
+      row.push(i === today ? orange(cell) : cell)
     }
 
     if (row.slice(1).join('') !== '') {
       tableData.push(row)
     }
   }
+
+  tableData[0][today + 1] = chalk.bold(orange(tableData[0][today + 1]))
 
   menu: while (true) {
     const { choice } = await prompts({
