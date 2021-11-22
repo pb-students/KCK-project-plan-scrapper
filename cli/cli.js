@@ -54,14 +54,14 @@ loop: while (true) {
       type: 'select',
       name: 'stage',
       message: 'Wybierz stopień studiow:',
-      choices: Object.keys(degrees[isStationary][degree].stages).map(stage => ({ title: stage, value: stage }))
+      choices: Object.keys(degrees[isStationary][degree]).map(stage => ({ title: stage, value: stage }))
     })
 
     const { semester } = await prompts({
       type: 'select',
       name: 'semester',
       message: 'Wybierz semestr:',
-      choices: Object.values(degrees[isStationary][degree].stages[stage].semesters).map(semester => ({ title: semester, value: semester }))
+      choices: Object.values(degrees[isStationary][degree][stage].semesters).map(semester => ({ title: semester, value: semester }))
     })
 
     config = { isStationary, degree, stage, semester }

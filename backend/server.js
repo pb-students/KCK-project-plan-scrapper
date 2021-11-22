@@ -52,27 +52,23 @@ app.get('/degrees', async (request, reply) => {
 
         const name = clazz.degree in degreeMap ? degreeMap[clazz.degree] : clazz.degree
         degrees[clazz.isStationary] ??= {}
-        degrees[clazz.isStationary][name] ??= {
-          name,
-          stages: {}
-        }
-
-        degrees[clazz.isStationary][name].stages[clazz.stage] ??= {
-          semesters: new Set(),
-          specs: new Set()
-        }
-
-        degrees[clazz.isStationary][name].stages[clazz.stage].semesters.add(clazz.semester)
-        degrees[clazz.isStationary][name].stages[clazz.stage].specs.add(clazz.spec)
+        degrees[clazz.isStationary][name] ??= {}
+        degrees[clazz.isStationary][name][clazz.stage] ??= {}
+        degrees[clazz.isStationary][name][clazz.stage][clazz.semester] ??= {}
+        degrees[clazz.isStationary][name][clazz.stage][clazz.semester][clazz.group] ??= new Set()
+        degrees[clazz.isStationary][name][clazz.stage][clazz.semester][clazz.group].add(clazz.spec)
       }
     }
   }
 
   for (const stationary of Object.values(degrees)) {
     for (const degree of Object.values(stationary)) {
-      for (const stage of Object.values(degree.stages)) {
-        stage.semesters = [...stage.semesters].filter(i => i).sort()
-        stage.specs = [...stage.specs].filter(i => i).sort()
+      for (const stage of Object.values(degree)) {
+        for (const semester of Object.values(stage)) {
+          for (const [key, group] of Object.entries(semester)) {
+            semester[key] = [...group].filter(i => i).sort()
+          }
+        }
       }
     }
   }
