@@ -1,6 +1,7 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
 import NodeCache from 'node-cache'
+import { parseDuration, parseClass } from './parser.js'
 
 const LIST_URL = 'https://degra.wi.pb.edu.pl/rozklady/rozklad.php?page=nau'
 const TEACHER_URL = `${LIST_URL}&id=`
@@ -66,7 +67,10 @@ export const fetchTeacherSchedule = async id => {
       case 'P':
         curr.text().replace(/^(.+?): (.+)/gm, (_, $1, $2) => {
             row.data[$1] ??= []
-            row.data[$1].push($2)
+            row.data[$1].push({
+                ...parseClass($2),
+                duration: parseDuration($1)
+            })
         })
         break;
     }
