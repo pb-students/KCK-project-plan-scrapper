@@ -82,5 +82,6 @@ app.get('/degrees', async (request, reply) => {
 
 console.log('Server starting...')
 await fetchAllTeachers()
+setInterval(fetchAllTeachers, 60 * 60 * 1000)
 console.log(`Server is running on port 2137`)
 app.listen(2137)
