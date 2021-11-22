@@ -46,31 +46,32 @@ app.get('/degrees', async (request, reply) => {
   for (const day of Object.values(await fetchSchedule())) {
     for (const hour of Object.values(day)) {
       for (const clazz of hour) {
-        if (clazz.degree === null) {
+        if (clazz.degree === undefined) {
           continue
         }
 
         const name = clazz.degree in degreeMap ? degreeMap[clazz.degree] : clazz.degree
         degrees[name] ??= {
           name,
+          stages: {}
+        }
+
+        degrees[name].stages[clazz.stage] ??= {
           semesters: new Set(),
           specs: new Set()
         }
 
-        if (clazz.semester !== null) {
-          degrees[name].semesters.add(clazz.semester)
-        }
-
-        if (clazz.spec !== null) {
-          degrees[name].specs.add(clazz.spec)
-        }
+        degrees[name].stages[clazz.stage].semesters.add(clazz.semester)
+        degrees[name].stages[clazz.stage].specs.add(clazz.spec)
       }
     }
   }
 
   for (const degree of Object.values(degrees)) {
-    degree.semesters = [...degree.semesters]
-    degree.specs = [...degree.specs]
+    for (const stage of Object.values(degree.stages)) {
+      stage.semesters = [...stage.semesters].filter(i => i).sort()
+      stage.specs = [...stage.specs].filter(i => i).sort()
+    }
   }
 
   return degrees
