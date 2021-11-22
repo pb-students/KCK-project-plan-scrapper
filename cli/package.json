@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "backend": "*"
+    "backend": "*",
+    "prompts": "^2.4.2"
   }
 }
