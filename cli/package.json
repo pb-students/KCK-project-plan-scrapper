@@ -8,6 +8,7 @@
   "dependencies": {
     "backend": "*",
     "prompts": "^2.4.2",
-    "table": "^6.7.3"
+    "table": "^6.7.3",
+    "xdg-basedir": "^5.1.0"
   }
 }
