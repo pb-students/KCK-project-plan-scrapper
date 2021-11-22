@@ -2,6 +2,8 @@ import axios from 'axios'
 import cheerio from 'cheerio'
 import NodeCache from 'node-cache'
 import { parseDuration, parseClass } from './parser.js'
+import { readFile } from 'fs/promises'
+import { writeFileSync } from 'fs'
 
 const LIST_URL = 'https://degra.wi.pb.edu.pl/rozklady/rozklad.php?page=nau'
 const TEACHER_URL = `${LIST_URL}&id=`
@@ -13,6 +15,12 @@ const KEY_LIST = 'teachers'
 const KEY_TEACHER = 'teachers__'
 
 const cache = new NodeCache()
+try {
+  cache.data = JSON.parse(await readFile('./cache-backup.json'))
+} catch (_) {}
+
+process.on('SIGINT', process.exit)
+process.on('exit', () => writeFileSync('./cache-backup.json', JSON.stringify(cache.data)))
 
 export const fetchTeacherList = async () => {
   const cached = cache.get(KEY_LIST)
