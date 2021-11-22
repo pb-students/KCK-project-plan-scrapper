@@ -8,6 +8,7 @@
   "dependencies": {
     "backend": "*",
     "chalk": "^4.1.2",
+    "luxon": "^2.1.1",
     "prompts": "^2.4.2",
     "table": "^6.7.3",
     "xdg-basedir": "^5.1.0"

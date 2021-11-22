@@ -5,6 +5,7 @@ import { writeFile, readFile, mkdir, rm } from 'fs/promises'
 import { join } from 'path'
 import { xdgConfig } from 'xdg-basedir'
 import chalk from 'chalk'
+import { DateTime } from 'luxon'
 
 const API_URL = 'http://localhost:2137'
 
@@ -14,7 +15,13 @@ const configDir = join(xdgConfig, 'kck-scrapper')
 const configFile = join(configDir, 'config.json')
 
 const orange = chalk.hex('#ffaa00')
+
 const today = new Date().getDay() - 1
+const startDate = DateTime.now().month > 9
+  ? DateTime.now().set({ day: 1, month: 10 })
+  : DateTime.now().minus({ year: 1 }).set({ day: 1, month: 10 })
+
+const isOdd = !!(DateTime.now().weekNumber - (startDate.weekNumber % 2)) % 2
 
 try {
   await mkdir(configDir)
@@ -106,6 +113,7 @@ loop: while (true) {
             && clazz.stage.toString() === stage
             && clazz.degree === degree
             && clazz.semester === semester
+            && clazz.isEven === !isOdd
         })
         .map(clazz => clazz.name)
         .sort()
