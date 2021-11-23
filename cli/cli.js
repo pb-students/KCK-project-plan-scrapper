@@ -43,38 +43,47 @@ loop: while (true) {
       initial: true
     })
 
+    const mapChoices = c => ({ title: c, value: c })
+
     const { degree } = await prompts({
       type: 'select',
       name: 'degree',
       message: 'Wybierz kierunek:',
-      choices: Object.keys(degrees[isStationary]).map(degree => ({ title: degree, value: degree }))
+      choices: Object.keys(degrees[isStationary]).map(mapChoices)
     })
 
     const { stage } = await prompts({
       type: 'select',
       name: 'stage',
       message: 'Wybierz stopień studiow:',
-      choices: Object.keys(degrees[isStationary][degree]).map(stage => ({ title: stage, value: stage }))
+      choices: Object.keys(degrees[isStationary][degree]).map(mapChoices)
     })
 
     const { semester } = await prompts({
       type: 'select',
       name: 'semester',
       message: 'Wybierz semestr:',
-      choices: Object.values(degrees[isStationary][degree][stage].semesters).map(semester => ({ title: semester, value: semester }))
+      choices: Object.keys(degrees[isStationary][degree][stage]).map(mapChoices)
     })
 
-    config = { isStationary, degree, stage, semester }
+    const { groups } = await prompts({
+      type: 'multiselect',
+      name: 'groups',
+      message: 'Wybierz grupy:',
+      choices: Object.keys(degrees[isStationary][degree][stage][semester]).map(mapChoices)
+    })
+
+    config = { isStationary, degree, stage, semester, groups, additional: [] }
     await writeFile(configFile, JSON.stringify(config))
   }
 
-  const { isStationary, degree, stage, semester } = config
+  const { isStationary, degree, stage, semester, groups } = config
 
   const tableData = [['']]
   const { data: schedule } = await axios.get(`${API_URL}/schedule`)
 
   const durations = {}
-  for (const [i, day] of Object.entries(Object.keys(schedule))) {
+  for (const day of Object.keys(schedule)) {
     tableData[0].push(day)
     durations[day] ??= []
   }
@@ -102,19 +111,45 @@ loop: while (true) {
     return acc
   }, acc)
 
+  const additionalArr = []
+  for (const [hour, classes] of Object.entries(classesByHour)) {
+    const _classes = classes.filter(clazz => {
+      return clazz.type === 'class'
+        && clazz.isStationary === isStationary
+        && clazz.stage.toString() === stage
+        && clazz.degree === degree
+        && clazz.semester.toString() === semester
+    })
+
+    for (const clazz of _classes) {
+      const day = tableData[0][clazz.dayIndex + 1]
+      additionalArr.push({
+        title: `${clazz.name} | ${clazz.group} | ${day} ${hour}`,
+        value: JSON.stringify(clazz)
+      })
+    }
+  }
+
   for (const [hour, classes] of Object.entries(classesByHour)) {
     const row = [hour]
 
     for (let i = 0; i < 7; ++i) {
-      const cell = classes.filter(clazz => clazz.dayIndex === i)
-        .filter(clazz => {
-          return clazz.type === 'class'
-            && clazz.isStationary === isStationary
-            && clazz.stage.toString() === stage
-            && clazz.degree === degree
-            && clazz.semester === semester
-            && clazz.isEven === !isOdd
-        })
+      const cellElements = classes.filter(clazz => {
+        return clazz.type === 'class'
+          && clazz.isStationary === isStationary
+          && clazz.stage.toString() === stage
+          && clazz.degree === degree
+          && clazz.semester.toString() === semester
+          && clazz.isEven === !isOdd
+          && (groups.includes(clazz.group) || !clazz.group)
+          && !clazz.elective
+      })
+
+      cellElements.push(...config.additional.map(clazz => JSON.parse(clazz)).filter(clazz => {
+        return hour === `${clazz.duration.fromLabel} - ${clazz.duration.toLabel}`
+      }))
+
+      const cell = cellElements.filter(clazz => clazz.dayIndex === i)
         .map(clazz => clazz.name)
         .sort()
         .join('\n')
@@ -137,6 +172,7 @@ loop: while (true) {
       choices: [
         { title: 'Sprawdź plan', value: 0 },
         { title: 'Resetuj ustawienia', value: 1 },
+        { title: 'Dodatkowe przedmioty', value: 2 },
         { title: 'Zamknij', value: -1 }
       ]
     })
@@ -148,6 +184,18 @@ loop: while (true) {
 
       case 1:
         await rm(configFile)
+        break menu
+
+      case 2:
+        const { additional } = await prompts({
+          type: 'autocompleteMultiselect',
+          name: 'additional',
+          message: 'Wybierz dodatkowe przedmioty:',
+          choices: additionalArr
+        })
+
+        config.additional = additional
+        await writeFile(configFile, JSON.stringify(config))
         break menu
 
       case -1:
