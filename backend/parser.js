@@ -21,7 +21,14 @@ export const parseDuration = duration => {
   }
 }
 
-export const parseSemester = semester => +semester.slice(5)
+export const parseSemester = semester => {
+  if (semester === 'przedmioty obieralne') {
+    // NOTE: Idiotyzm i brak standardu
+    return 5
+  }
+
+  return +semester.slice(5)
+}
 export const parseDegree = degree => degree.slice(6)
 export const parseType = type => {
   const [stationary, stage] = type.split(' ', 2)
@@ -63,7 +70,10 @@ export const parseClass = str => {
     return { type: 'reservations', description: tokens[0], place: tokens[2], name: tokens[3] }
   }
 
-  const spec = !tokens[0].startsWith('sem. ') ? tokens.shift() : undefined
+  const spec = tokens[0] !== 'przedmioty obieralne'
+    ? (!tokens[0].startsWith('sem. ') ? tokens.shift() : undefined)
+    : undefined
+
   const [sem, deg, type] = tokens.splice(0, 3)
   const semester = parseSemester(sem)
   const degree = parseDegree(deg)
@@ -77,10 +87,6 @@ export const parseClass = str => {
   }
 
   const [place, ...nameParts] = tokens
-  // const [name, group] = nameParts.reverse()
-  //   .join(', ')
-  //   .split(' grupa ')
-
   const [_, name, groupKey, groupNumber] = nameParts.reverse().join(', ').match(/^(.+?)(?:(?: \((.+)\))? grupa (\d+))?$/) ?? []
 
   const groupMap = { L: 'Lab', P: 'PS', Ps: 'PS', J: 'Język', S: 'Seminarium' }
@@ -95,6 +101,7 @@ export const parseClass = str => {
 
   return {
     type: 'class',
+    elective: sem === 'przedmioty obieralne',
     name,
     place,
     semester,
