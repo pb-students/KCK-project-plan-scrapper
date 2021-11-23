@@ -9,6 +9,7 @@
     "axios": "^0.23.0",
     "cheerio": "^1.0.0-rc.10",
     "fastify": "^3.22.0",
-    "node-cache": "^5.1.2"
+    "node-cache": "^5.1.2",
+    "xdg-basedir": "^5.1.0"
   }
 }

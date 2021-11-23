@@ -3,7 +3,9 @@ import cheerio from 'cheerio'
 import NodeCache from 'node-cache'
 import { parseDuration, parseClass } from './parser.js'
 import { readFile } from 'fs/promises'
+import { xdgCache } from 'xdg-basedir'
 import { writeFileSync } from 'fs'
+import { join } from 'path'
 
 const LIST_URL = 'https://degra.wi.pb.edu.pl/rozklady/rozklad.php?page=nau'
 const TEACHER_URL = `${LIST_URL}&id=`
@@ -15,12 +17,14 @@ const KEY_LIST = 'teachers'
 const KEY_TEACHER = 'teachers__'
 
 const cache = new NodeCache()
+const cacheDir = join(xdgCache, 'kck-scrapper')
+const cacheFile = join(cacheDir, 'cache.json')
 try {
-  cache.data = JSON.parse(await readFile('./cache-backup.json'))
+  cache.data = JSON.parse(await readFile(cacheFile))
 } catch (_) {}
 
 process.on('SIGINT', process.exit)
-process.on('exit', () => writeFileSync('./cache-backup.json', JSON.stringify(cache.data)))
+process.on('exit', () => writeFileSync(cacheFile, JSON.stringify(cache.data)))
 
 export const fetchTeacherList = async () => {
   const cached = cache.get(KEY_LIST)
